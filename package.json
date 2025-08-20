@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "next dev",
     "format": "prettier --write .",
     "clean": "rm -rf dist .next node_modules",
-    "build": "next build --turbo",
-    "start": "next start --turbo",
+    "build": "next build",
+    "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
