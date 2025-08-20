@@ -37,7 +37,7 @@ const SimpleYouTubePage = () => {
   }, []);
 
   if (loading) {
-    return <div className="p-4">Chargement...</div>;
+    return <div className="p-4">Chargement de la page...</div>;
   }
 
   return (
