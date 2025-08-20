@@ -118,7 +118,7 @@ const Footer: React.FC = () => {
                   </div>
                   <div className="flex-1">
                     <p className="text-white font-medium">YouTube</p>
-                    <p className="text-slate-400 text-sm">@Este_YTB_YT</p>
+                    <p className="text-slate-400 text-sm">{'[@Este_Ytb]'}</p>
                   </div>
                   <ExternalLink className="w-4 h-4 text-slate-500 group-hover:text-slate-300 transition-colors" />
                 </m.a>

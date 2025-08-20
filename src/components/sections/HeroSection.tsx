@@ -156,14 +156,14 @@ const HeroSection: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <StatCard
                 icon={Play}
-                value="200+"
+                value="100+"
                 label="Vidéos"
                 iconColor="text-red-400"
               />
               
               <StatCard
                 icon={Users}
-                value="5K+"
+                value="200 +"
                 label="Abonnés"
                 iconColor="text-cyan-400"
               />

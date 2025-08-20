@@ -10,6 +10,7 @@ let cache = {
 exports.handler = async function () {
   const API_KEY = process.env.YOUTUBE_API_KEY;
   const channelId = process.env.YOUTUBE_CHANNEL_ID;
+  const playlistId = process.env.YOUTUBE_PLAYLIST_ID;
 
   console.log("start youtube function");
 
@@ -20,6 +21,7 @@ exports.handler = async function () {
     const fallbackData = {
       videoData: null,
       liveData: { isLive: false, url: false },
+      playlistVideos: [],
     };
     return {
       statusCode: 200,
@@ -48,44 +50,43 @@ exports.handler = async function () {
       body: JSON.stringify({ error: "API key manquante" }),
     };
   }
-  if (!channelId) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "Paramètre channelId manquant" }),
-    };
-  }
 
   try {
-    // Requêtes pour récupérer la dernière vidéo et vérifier s'il y a un live en cours.
-    const latestVideoUrl = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet&order=date&maxResults=1&type=video`;
-    const liveCheckUrl = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet&eventType=live&type=video&maxResults=1`;
+    const requests = [];
+    
+    // Requête pour la dernière vidéo si channelId fourni
+    if (channelId) {
+      const latestVideoUrl = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet&order=date&maxResults=1&type=video`;
+      requests.push(fetch(latestVideoUrl));
+    } else {
+      requests.push(Promise.resolve(null));
+    }
 
-    console.log("Fetching latestVideoUrl:", latestVideoUrl);
-    console.log("Fetching liveCheckUrl:", liveCheckUrl);
+    // Requête pour vérifier le live si channelId fourni
+    if (channelId) {
+      const liveCheckUrl = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet&eventType=live&type=video&maxResults=1`;
+      requests.push(fetch(liveCheckUrl));
+    } else {
+      requests.push(Promise.resolve(null));
+    }
 
-    const [searchRes, liveRes] = await Promise.all([
-      fetch(latestVideoUrl),
-      fetch(liveCheckUrl),
-    ]);
+    console.log("Fetching data...");
 
-    // Gérer spécifiquement l'erreur de quota dépassé
-    if (!searchRes.ok) {
+    const [searchRes, liveRes] = await Promise.all(requests);
+
+    // Gérer les erreurs de quota pour les requêtes de base
+    if (searchRes && !searchRes.ok) {
       const errorBody = await searchRes.text();
-      console.error(
-        "Erreur lors de la récupération des vidéos (latest):",
-        searchRes.status,
-        errorBody,
-      );
+      console.error("Erreur lors de la récupération des vidéos (latest):", searchRes.status, errorBody);
 
-      // Gérer spécifiquement l'erreur de quota dépassé
       if (searchRes.status === 403) {
         console.error("QUOTA EXCEEDED - Setting 24h cache");
         const fallbackData = {
           videoData: null,
           liveData: { isLive: false, url: false },
+          playlistVideos: [],
         };
 
-        // Marquer le quota comme dépassé pour 24h
         cache.quotaExceeded = true;
         cache.errorTimestamp = now;
         cache.data = fallbackData;
@@ -94,7 +95,7 @@ exports.handler = async function () {
         return {
           statusCode: 200,
           headers: {
-            "Cache-Control": "public, max-age=86400", // Cache 24 heures
+            "Cache-Control": "public, max-age=86400",
           },
           body: JSON.stringify(fallbackData),
         };
@@ -110,140 +111,113 @@ exports.handler = async function () {
       };
     }
 
-    if (!liveRes.ok) {
-      const errorBody = await liveRes.text();
-      console.error(
-        "Erreur lors de la vérification du live:",
-        liveRes.status,
-        errorBody,
-      );
-
-      // Si quota dépassé pour le live, continuer avec juste les données de vidéo
-      if (liveRes.status === 403) {
-        console.log("Quota dépassé pour le live check, on continue sans");
-      } else {
-        return {
-          statusCode: 500,
-          body: JSON.stringify({
-            error: "Erreur lors de la vérification du live",
-            status: liveRes.status,
-            body: errorBody,
-          }),
-        };
-      }
-    }
-
-    const searchData = await searchRes.json();
-    let liveDataRaw = null;
-
-    // Essayer de récupérer les données live seulement si la requête a réussi
-    if (liveRes.ok) {
-      liveDataRaw = await liveRes.json();
-    }
-
-    // --- Préparer liveData ---
+    // Traitement des données de base
+    let videoData = null;
     let liveData = { isLive: false, url: false };
-    if (liveDataRaw && liveDataRaw.items && liveDataRaw.items.length > 0) {
-      const liveVideo = liveDataRaw.items[0];
-      const liveVideoId = liveVideo.id?.videoId;
-      if (liveVideoId) {
-        liveData = {
-          isLive: true,
-          url: `https://www.youtube.com/watch?v=${liveVideoId}`,
+    let subscriberCount = null;
+
+    if (searchRes) {
+      const searchData = await searchRes.json();
+      
+      if (searchData.items && searchData.items.length > 0) {
+        const video = searchData.items[0];
+        const videoId = video.id.videoId;
+
+        // Récupérer les statistiques
+        const statsRes = await fetch(
+          `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${videoId}&part=statistics,contentDetails`,
+        );
+        
+        let stats = null;
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          stats = statsData.items?.[0];
+        }
+
+        videoData = {
+          id: videoId,
+          title: video.snippet.title,
+          description: video.snippet.description,
+          thumbnail:
+            video.snippet.thumbnails?.maxres?.url ||
+            video.snippet.thumbnails?.high?.url ||
+            video.snippet.thumbnails?.default?.url ||
+            null,
+          publishedAt: video.snippet.publishedAt,
+          viewCount: stats?.statistics?.viewCount ?? null,
+          duration: stats?.contentDetails?.duration ?? null,
+          likeCount: stats?.statistics?.likeCount ?? null,
         };
       }
     }
 
-    // --- Si aucune vidéo trouvée, on renvoie une erreur comme avant (mais on pourrait renvoyer quand même liveData si tu veux) ---
-    if (!searchData.items || searchData.items.length === 0) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({
-          error: "Aucune vidéo trouvée",
-          liveData,
-        }),
-      };
-    }
-
-    const video = searchData.items[0];
-    const videoId = video.id.videoId;
-
-    // Récupérer les statistiques et contentDetails de la vidéo
-    const statsRes = await fetch(
-      `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${videoId}&part=statistics,contentDetails`,
-    );
-    if (!statsRes.ok) {
-      // On ne plante pas complètement : on renvoie la vidéo sans stats si l'API stats échoue
-      console.warn(
-        "Impossible de récupérer les stats de la vidéo :",
-        await statsRes.text(),
-      );
-    }
-    const statsData = await statsRes.json();
-    const stats = statsData.items?.[0];
-
-    // Récupérer le nombre de likes de la vidéo (si disponible)
-    const likeCount = stats?.statistics?.likeCount ?? null;
-
-    // Récupérer le nombre d'abonnés de la chaîne
-    let subscriberCount = null;
-    try {
-      const channelRes = await fetch(
-        `https://www.googleapis.com/youtube/v3/channels?key=${API_KEY}&id=${channelId}&part=statistics`,
-      );
-      if (channelRes.ok) {
-        const channelData = await channelRes.json();
-        const channelStats = channelData.items?.[0]?.statistics;
-        subscriberCount = channelStats?.subscriberCount ?? null;
-      } else {
-        const chErr = await channelRes.text();
-        console.warn(
-          "Impossible de récupérer les stats de la chaîne :",
-          channelRes.status,
-          chErr,
-        );
-        // si quota dépassé on ne marque pas tout le service comme en erreur ici,
-        // on se contente de renvoyer null pour subscriberCount
+    // Traitement du live
+    if (liveRes && liveRes.ok) {
+      const liveDataRaw = await liveRes.json();
+      if (liveDataRaw && liveDataRaw.items && liveDataRaw.items.length > 0) {
+        const liveVideo = liveDataRaw.items[0];
+        const liveVideoId = liveVideo.id?.videoId;
+        if (liveVideoId) {
+          liveData = {
+            isLive: true,
+            url: `https://www.youtube.com/watch?v=${liveVideoId}`,
+          };
+        }
       }
-    } catch (e) {
-      console.warn("Erreur lors de la récupération des abonnés :", e.message);
     }
 
-    const videoData = {
-      id: videoId,
-      title: video.snippet.title,
-      description: video.snippet.description,
-      thumbnail:
-        video.snippet.thumbnails?.maxres?.url ||
-        video.snippet.thumbnails?.high?.url ||
-        video.snippet.thumbnails?.default?.url ||
-        null,
-      publishedAt: video.snippet.publishedAt,
-      viewCount: stats?.statistics?.viewCount ?? null,
-      duration: stats?.contentDetails?.duration ?? null,
-      likeCount: likeCount,
-    };
+    // Récupérer le nombre d'abonnés si channelId fourni
+    if (channelId) {
+      try {
+        const channelRes = await fetch(
+          `https://www.googleapis.com/youtube/v3/channels?key=${API_KEY}&id=${channelId}&part=statistics`,
+        );
+        if (channelRes.ok) {
+          const channelData = await channelRes.json();
+          const channelStats = channelData.items?.[0]?.statistics;
+          subscriberCount = channelStats?.subscriberCount ?? null;
+        }
+      } catch (e) {
+        console.warn("Erreur lors de la récupération des abonnés :", e.message);
+      }
+    }
 
-    // Objet final contenant videoData, liveData et les infos chaîne
+    // Récupérer toutes les vidéos de la playlist
+    let playlistVideos = [];
+    if (playlistId) {
+      try {
+        console.log("Fetching playlist videos...");
+        playlistVideos = await fetchAllPlaylistVideos(API_KEY, playlistId);
+        console.log(`Retrieved ${playlistVideos.length} videos from playlist`);
+      } catch (e) {
+        console.warn("Erreur lors de la récupération de la playlist :", e.message);
+        if (e.message.includes('403')) {
+          // Si quota dépassé pour la playlist, on continue sans
+          console.log("Quota dépassé pour la playlist, on continue sans");
+        }
+      }
+    }
+
     const responsePayload = {
       videoData,
       liveData,
       channelData: {
         subscriberCount,
       },
+      playlistVideos,
     };
 
     // Mettre en cache la réponse et reset quota exceeded
     cache.data = responsePayload;
     cache.timestamp = now;
-    cache.quotaExceeded = false; // Reset quota exceeded flag on success
+    cache.quotaExceeded = false;
 
-    console.log(responsePayload);
+    console.log("Response payload prepared with", playlistVideos.length, "playlist videos");
 
     return {
       statusCode: 200,
       headers: {
-        "Cache-Control": "public, max-age=300", // Cache côté client de 5 minutes
+        "Cache-Control": "public, max-age=300",
       },
       body: JSON.stringify(responsePayload),
     };
@@ -252,9 +226,108 @@ exports.handler = async function () {
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: "Erreur lors du chargement de la vidéo / vérification du live",
+        error: "Erreur lors du chargement des données YouTube",
         details: err.message,
       }),
     };
   }
 };
+
+// Fonction pour récupérer toutes les vidéos d'une playlist avec pagination
+async function fetchAllPlaylistVideos(apiKey, playlistId, maxResults = 50) {
+  let allVideos = [];
+  let nextPageToken = '';
+  let requestCount = 0;
+  const maxRequests = 10; // Limite pour éviter les boucles infinies
+
+  try {
+    do {
+      requestCount++;
+      if (requestCount > maxRequests) {
+        console.warn(`Limite de ${maxRequests} requêtes atteinte pour la playlist`);
+        break;
+      }
+
+      const url = `https://www.googleapis.com/youtube/v3/playlistItems?key=${apiKey}&playlistId=${playlistId}&part=snippet,contentDetails&maxResults=${maxResults}${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`;
+      
+      console.log(`Fetching playlist page ${requestCount}...`);
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        if (response.status === 403) {
+          throw new Error('403 - Quota exceeded');
+        }
+        throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.items) {
+        // Récupérer les IDs des vidéos pour obtenir les statistiques
+        const videoIds = data.items
+          .map(item => item.contentDetails?.videoId)
+          .filter(Boolean);
+
+        // Récupérer les statistiques en batch
+        let videoStats = {};
+        if (videoIds.length > 0) {
+          try {
+            const statsUrl = `https://www.googleapis.com/youtube/v3/videos?key=${apiKey}&id=${videoIds.join(',')}&part=statistics,contentDetails`;
+            const statsResponse = await fetch(statsUrl);
+            
+            if (statsResponse.ok) {
+              const statsData = await statsResponse.json();
+              if (statsData.items) {
+                statsData.items.forEach(item => {
+                  videoStats[item.id] = item;
+                });
+              }
+            }
+          } catch (e) {
+            console.warn("Erreur lors de la récupération des stats:", e.message);
+          }
+        }
+
+        // Traiter les vidéos
+        const videos = data.items.map(item => {
+          const videoId = item.contentDetails?.videoId;
+          const stats = videoStats[videoId];
+          
+          return {
+            id: videoId,
+            title: item.snippet?.title || 'Titre non disponible',
+            description: item.snippet?.description || '',
+            thumbnail:
+              item.snippet?.thumbnails?.maxres?.url ||
+              item.snippet?.thumbnails?.high?.url ||
+              item.snippet?.thumbnails?.medium?.url ||
+              item.snippet?.thumbnails?.default?.url ||
+              null,
+            publishedAt: item.snippet?.publishedAt || item.contentDetails?.videoPublishedAt,
+            channelTitle: item.snippet?.channelTitle || '',
+            position: item.snippet?.position || allVideos.length,
+            viewCount: stats?.statistics?.viewCount ?? null,
+            duration: stats?.contentDetails?.duration ?? null,
+            likeCount: stats?.statistics?.likeCount ?? null,
+          };
+        }).filter(video => video.id); // Filtrer les vidéos sans ID (vidéos supprimées/privées)
+
+        allVideos.push(...videos);
+      }
+
+      nextPageToken = data.nextPageToken || '';
+      
+      // Petite pause pour éviter de surcharger l'API
+      if (nextPageToken && requestCount < maxRequests) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+    } while (nextPageToken && requestCount < maxRequests);
+
+  } catch (error) {
+    console.error("Erreur lors de la récupération de la playlist:", error);
+    throw error;
+  }
+
+  return allVideos;
+}

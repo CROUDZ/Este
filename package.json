@@ -8,7 +8,8 @@
     "clean": "rm -rf dist .next node_modules",
     "build": "next build --turbo",
     "start": "next start --turbo",
-    "lint": "next lint"
+    "lint": "next lint",
+    "netlify": "npx netlify dev"
   },
   "dependencies": {
     "critters": "^0.0.23",

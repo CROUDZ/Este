@@ -9,6 +9,19 @@ interface VideoData {
   likeCount?: string | null;
 }
 
+interface PlaylistVideo {
+  id: string;
+  title: string;
+  description: string;
+  thumbnail: string | null;
+  publishedAt: string;
+  channelTitle: string;
+  position: number;
+  viewCount?: string | null;
+  duration?: string | null;
+  likeCount?: string | null;
+}
+
 interface LiveData {
   isLive: boolean;
   url: string | false;
@@ -22,6 +35,7 @@ export interface YouTubeData {
   videoData: VideoData | null;
   liveData: LiveData | null;
   channelData: ChannelData | null;
+  playlistVideos: PlaylistVideo[];
   lastFetched: number;
 }
 
@@ -43,6 +57,7 @@ class YouTubeService {
       videoData: null,
       liveData: { isLive: false, url: false },
       channelData: null,
+      playlistVideos: [],
       lastFetched: Date.now(),
     };
   }
@@ -69,6 +84,7 @@ class YouTubeService {
         videoData: data.videoData ?? null,
         liveData: data.liveData ?? null,
         channelData: data.channelData ?? null,
+        playlistVideos: data.playlistVideos ?? [],
         lastFetched: Date.now(),
       };
 
@@ -150,6 +166,57 @@ class YouTubeService {
   public clearCache(): void {
     this.cache = null;
     this.lastErrorTimestamp = null;
+  }
+
+  // Méthodes utilitaires pour accéder aux données spécifiques
+  public async getPlaylistVideos(): Promise<PlaylistVideo[]> {
+    const data = await this.getData();
+    return data.playlistVideos;
+  }
+
+  public async getLatestVideo(): Promise<VideoData | null> {
+    const data = await this.getData();
+    return data.videoData;
+  }
+
+  public async getLiveStatus(): Promise<LiveData | null> {
+    const data = await this.getData();
+    return data.liveData;
+  }
+
+  public async getChannelData(): Promise<ChannelData | null> {
+    const data = await this.getData();
+    return data.channelData;
+  }
+
+  // Méthode pour filtrer/rechercher dans les vidéos de la playlist
+  public async searchPlaylistVideos(query: string): Promise<PlaylistVideo[]> {
+    const videos = await this.getPlaylistVideos();
+    const lowerQuery = query.toLowerCase();
+    
+    return videos.filter(video => 
+      video.title.toLowerCase().includes(lowerQuery) ||
+      video.description.toLowerCase().includes(lowerQuery)
+    );
+  }
+
+  // Méthode pour obtenir les vidéos les plus récentes de la playlist
+  public async getRecentPlaylistVideos(limit: number = 10): Promise<PlaylistVideo[]> {
+    const videos = await this.getPlaylistVideos();
+    
+    return videos
+      .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+      .slice(0, limit);
+  }
+
+  // Méthode pour obtenir les vidéos les plus vues de la playlist
+  public async getMostViewedPlaylistVideos(limit: number = 10): Promise<PlaylistVideo[]> {
+    const videos = await this.getPlaylistVideos();
+    
+    return videos
+      .filter(video => video.viewCount)
+      .sort((a, b) => parseInt(b.viewCount || '0') - parseInt(a.viewCount || '0'))
+      .slice(0, limit);
   }
 }
 
