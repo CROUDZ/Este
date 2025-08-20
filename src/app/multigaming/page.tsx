@@ -2,19 +2,19 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { m, AnimatePresence } from "framer-motion";
-import { 
-  Play, 
-  Eye, 
-  Calendar, 
-  ExternalLink, 
-  Grid3X3, 
+import {
+  Play,
+  Eye,
+  Calendar,
+  ExternalLink,
+  Grid3X3,
   List,
   Search,
   Filter,
   ArrowUpRight,
   Gamepad2,
   Users,
-  Trophy
+  Trophy,
 } from "lucide-react";
 import { youtubeService, YouTubeData } from "@/services/youtubeService";
 import { GlassCard } from "@/components/shared/GlassCard";
@@ -37,9 +37,11 @@ interface PlaylistVideo {
 const MultiGamingPage = () => {
   const [data, setData] = useState<YouTubeData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'title'>('recent');
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"recent" | "popular" | "title">(
+    "recent",
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -59,37 +61,46 @@ const MultiGamingPage = () => {
   // Filter and sort videos
   const filteredAndSortedVideos = useMemo(() => {
     if (!data?.playlistVideos) return [];
-    
-    const filtered = data.playlistVideos.filter(video =>
-      video.title.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const filtered = data.playlistVideos.filter((video) =>
+      video.title.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
+    let sortedVideos;
     switch (sortBy) {
-      case 'popular':
-        return filtered.sort((a, b) => 
-          parseInt(b.viewCount || '0') - parseInt(a.viewCount || '0')
+      case "popular":
+        sortedVideos = filtered.sort(
+          (a, b) => parseInt(b.viewCount || "0") - parseInt(a.viewCount || "0"),
         );
-      case 'title':
-        return filtered.sort((a, b) => a.title.localeCompare(b.title));
-      case 'recent':
+        break;
+      case "title":
+        sortedVideos = filtered.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case "recent":
       default:
-        return filtered.sort((a, b) => 
-          new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+        sortedVideos = filtered.sort(
+          (a, b) =>
+            new Date(b.publishedAt).getTime() -
+            new Date(a.publishedAt).getTime(),
         );
+        break;
     }
+
+    // Remove the first video (most recent)
+    return sortedVideos.slice(1);
   }, [data?.playlistVideos, searchTerm, sortBy]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', { 
-      day: 'numeric', 
-      month: 'short', 
-      year: 'numeric' 
+    return date.toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
   };
 
   const formatViews = (views: string | null | undefined) => {
-    if (!views) return 'N/A';
+    if (!views) return "N/A";
     const num = parseInt(views);
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
@@ -98,12 +109,12 @@ const MultiGamingPage = () => {
 
   const openVideoInNewTab = (videoId: string) => {
     if (!videoId) {
-      console.error('Video ID is missing');
+      console.error("Video ID is missing");
       return;
     }
     const url = `https://www.youtube.com/watch?v=${videoId}`;
-    console.log('Opening video:', url);
-    window.open(url, '_blank', 'noopener,noreferrer');
+    console.log("Opening video:", url);
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   if (loading) {
@@ -113,7 +124,9 @@ const MultiGamingPage = () => {
         <div className="relative z-10 flex items-center justify-center min-h-screen">
           <GlassCard className="text-center">
             <div className="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-slate-300 text-lg">Chargement des vidéos gaming...</p>
+            <p className="text-slate-300 text-lg">
+              Chargement des vidéos gaming...
+            </p>
           </GlassCard>
         </div>
       </div>
@@ -123,7 +136,7 @@ const MultiGamingPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 relative overflow-hidden">
       <BackgroundElements />
-      
+
       {/* Header Section */}
       <div className="relative z-10 pt-24 pb-16">
         <div className="container mx-auto px-6">
@@ -142,7 +155,7 @@ const MultiGamingPage = () => {
                 <Trophy className="w-6 h-6 text-white" />
               </div>
             </div>
-            
+
             <h1 className="section-title gradient-text-primary md:text-7xl sm:text-5xl text-4xl">
               MultiGaming
             </h1>
@@ -150,12 +163,14 @@ const MultiGamingPage = () => {
               Découvrez toutes mes vidéos MultiGaming avec des parties épiques,
               des collaborations et des moments de pure adrénaline !
             </p>
-            
+
             {/* Stats Row */}
             <div className="flex flex-wrap justify-center gap-6 mt-8">
               <div className="flex items-center gap-2 text-slate-300">
                 <Play className="w-5 h-5 text-purple-400" />
-                <span className="font-semibold">{data?.playlistVideos?.length || 0}</span>
+                <span className="font-semibold">
+                  {data?.playlistVideos?.length || 0}
+                </span>
                 <span>Vidéos</span>
               </div>
               <div className="flex items-center gap-2 text-slate-300">
@@ -167,9 +182,12 @@ const MultiGamingPage = () => {
                 <Eye className="w-5 h-5 text-pink-400" />
                 <span className="font-semibold">
                   {formatViews(
-                    data?.playlistVideos?.reduce((sum, video) => 
-                      sum + parseInt(video.viewCount || '0'), 0
-                    ).toString()
+                    data?.playlistVideos
+                      ?.reduce(
+                        (sum, video) => sum + parseInt(video.viewCount || "0"),
+                        0,
+                      )
+                      .toString(),
                   )}
                 </span>
                 <span>Vues totales</span>
@@ -188,18 +206,23 @@ const MultiGamingPage = () => {
               <GlassCard className="p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                  <h2 className="text-2xl font-bold text-white">Dernière vidéo MultiGaming</h2>
+                  <h2 className="text-2xl font-bold text-white">
+                    Dernière vidéo MultiGaming
+                  </h2>
                 </div>
-                
+
                 <div className="grid lg:grid-cols-2 gap-8 items-center">
-                  <div 
+                  <div
                     className="relative group cursor-pointer"
                     onClick={() => openVideoInNewTab(data.playlistVideos[0].id)}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-2xl blur opacity-5 group-hover:opacity-15 transition-opacity duration-300"></div>
                     <div className="relative">
                       <Image
-                        src={data.playlistVideos[0].thumbnail || "/default-thumbnail.jpg"}
+                        src={
+                          data.playlistVideos[0].thumbnail ||
+                          "/default-thumbnail.jpg"
+                        }
                         alt={data.playlistVideos[0].title}
                         width={600}
                         height={337}
@@ -212,7 +235,7 @@ const MultiGamingPage = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <h3 className="text-2xl font-bold text-white leading-tight">
                       {data.playlistVideos[0].title}
@@ -220,16 +243,22 @@ const MultiGamingPage = () => {
                     <div className="flex flex-wrap gap-4 text-sm text-slate-300">
                       <div className="flex items-center gap-2">
                         <Eye className="w-4 h-4 text-purple-400" />
-                        <span>{formatViews(data.playlistVideos[0].viewCount)} vues</span>
+                        <span>
+                          {formatViews(data.playlistVideos[0].viewCount)} vues
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-cyan-400" />
-                        <span>{formatDate(data.playlistVideos[0].publishedAt)}</span>
+                        <span>
+                          {formatDate(data.playlistVideos[0].publishedAt)}
+                        </span>
                       </div>
                     </div>
-                    <button 
+                    <button
                       className="cta-button-primary group"
-                      onClick={() => openVideoInNewTab(data.playlistVideos[0].id)}
+                      onClick={() =>
+                        openVideoInNewTab(data.playlistVideos[0].id)
+                      }
                     >
                       <span>Regarder maintenant</span>
                       <ArrowUpRight className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
@@ -267,7 +296,11 @@ const MultiGamingPage = () => {
                   <div className="relative">
                     <select
                       value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value as 'recent' | 'popular' | 'title')}
+                      onChange={(e) =>
+                        setSortBy(
+                          e.target.value as "recent" | "popular" | "title",
+                        )
+                      }
                       className="appearance-none bg-slate-800/50 border border-slate-600/50 rounded-xl px-4 py-3 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
                     >
                       <option value="recent">Plus récentes</option>
@@ -280,21 +313,21 @@ const MultiGamingPage = () => {
                   {/* View Mode Toggle */}
                   <div className="flex bg-slate-800/50 rounded-xl p-1 border border-slate-600/50">
                     <button
-                      onClick={() => setViewMode('grid')}
+                      onClick={() => setViewMode("grid")}
                       className={`p-2 rounded-lg transition-all duration-300 ${
-                        viewMode === 'grid'
-                          ? 'bg-purple-500 text-white shadow-lg'
-                          : 'text-slate-400 hover:text-white'
+                        viewMode === "grid"
+                          ? "bg-purple-500 text-white shadow-lg"
+                          : "text-slate-400 hover:text-white"
                       }`}
                     >
                       <Grid3X3 className="w-5 h-5" />
                     </button>
                     <button
-                      onClick={() => setViewMode('list')}
+                      onClick={() => setViewMode("list")}
                       className={`p-2 rounded-lg transition-all duration-300 ${
-                        viewMode === 'list'
-                          ? 'bg-purple-500 text-white shadow-lg'
-                          : 'text-slate-400 hover:text-white'
+                        viewMode === "list"
+                          ? "bg-purple-500 text-white shadow-lg"
+                          : "text-slate-400 hover:text-white"
                       }`}
                     >
                       <List className="w-5 h-5" />
@@ -302,11 +335,13 @@ const MultiGamingPage = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Results count */}
               <div className="mt-4 pt-4 border-t border-slate-600/30">
                 <p className="text-slate-300 text-sm">
-                  {filteredAndSortedVideos.length} vidéo{filteredAndSortedVideos.length > 1 ? 's' : ''} trouvée{filteredAndSortedVideos.length > 1 ? 's' : ''}
+                  {filteredAndSortedVideos.length} vidéo
+                  {filteredAndSortedVideos.length > 1 ? "s" : ""} trouvée
+                  {filteredAndSortedVideos.length > 1 ? "s" : ""}
                   {searchTerm && (
                     <span className="text-purple-400 ml-1">
                       pour "{searchTerm}"
@@ -324,7 +359,7 @@ const MultiGamingPage = () => {
             transition={{ duration: 0.6, delay: 0.6 }}
           >
             <AnimatePresence mode="wait">
-              {viewMode === 'grid' ? (
+              {viewMode === "grid" ? (
                 <m.div
                   key="grid"
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -333,55 +368,59 @@ const MultiGamingPage = () => {
                   transition={{ duration: 0.3 }}
                   className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
                 >
-                  {filteredAndSortedVideos.map((video: PlaylistVideo, index) => (
-                    <m.div
-                      key={video.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: index * 0.05 }}
-                    >
-                      <GlassCard 
-                        hoverable 
-                        className="group cursor-pointer h-full"
-                        onClick={() => openVideoInNewTab(video.id)}
+                  {filteredAndSortedVideos.map(
+                    (video: PlaylistVideo, index) => (
+                      <m.div
+                        key={video.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: index * 0.05 }}
                       >
-                        <div className="relative mb-4">
-                          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-cyan-500/5 rounded-xl blur opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
-                          <div className="relative">
-                            <Image
-                              src={video.thumbnail || "/default-thumbnail.jpg"}
-                              alt={video.title}
-                              width={320}
-                              height={180}
-                              className="w-full rounded-xl"
-                            />
-                            <div className="absolute inset-0 bg-black/10 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              <div className="w-12 h-12 bg-white/5 backdrop-blur-sm rounded-full flex items-center justify-center">
-                                <Play className="w-6 h-6 text-white ml-1" />
+                        <GlassCard
+                          hoverable
+                          className="group cursor-pointer h-full"
+                          onClick={() => openVideoInNewTab(video.id)}
+                        >
+                          <div className="relative mb-4">
+                            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-cyan-500/5 rounded-xl blur opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+                            <div className="relative">
+                              <Image
+                                src={
+                                  video.thumbnail || "/default-thumbnail.jpg"
+                                }
+                                alt={video.title}
+                                width={320}
+                                height={180}
+                                className="w-full rounded-xl"
+                              />
+                              <div className="absolute inset-0 bg-black/10 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <div className="w-12 h-12 bg-white/5 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                  <Play className="w-6 h-6 text-white ml-1" />
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                        
-                        <div className="space-y-3">
-                          <h3 className="font-semibold text-white text-sm leading-tight line-clamp-2 group-hover:text-purple-300 transition-colors duration-300">
-                            {video.title}
-                          </h3>
-                          
-                          <div className="flex items-center justify-between text-xs text-slate-400">
-                            <div className="flex items-center gap-1">
-                              <Eye className="w-3 h-3" />
-                              <span>{formatViews(video.viewCount)}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              <span>{formatDate(video.publishedAt)}</span>
+
+                          <div className="space-y-3">
+                            <h3 className="font-semibold text-white text-sm leading-tight line-clamp-2 group-hover:text-purple-300 transition-colors duration-300">
+                              {video.title}
+                            </h3>
+
+                            <div className="flex items-center justify-between text-xs text-slate-400">
+                              <div className="flex items-center gap-1">
+                                <Eye className="w-3 h-3" />
+                                <span>{formatViews(video.viewCount)}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                <span>{formatDate(video.publishedAt)}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </GlassCard>
-                    </m.div>
-                  ))}
+                        </GlassCard>
+                      </m.div>
+                    ),
+                  )}
                 </m.div>
               ) : (
                 <m.div
@@ -392,65 +431,72 @@ const MultiGamingPage = () => {
                   transition={{ duration: 0.3 }}
                   className="space-y-4"
                 >
-                  {filteredAndSortedVideos.map((video: PlaylistVideo, index) => (
-                    <m.div
-                      key={video.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.4, delay: index * 0.05 }}
-                    >
-                      <GlassCard 
-                        hoverable 
-                        className="group cursor-pointer"
-                        onClick={() => openVideoInNewTab(video.id)}
+                  {filteredAndSortedVideos.map(
+                    (video: PlaylistVideo, index) => (
+                      <m.div
+                        key={video.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.4, delay: index * 0.05 }}
                       >
-                        <div className="flex gap-4 items-start">
-                          <div className="relative flex-shrink-0">
-                            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-cyan-500/5 rounded-xl blur opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
-                            <div className="relative">
-                              <Image
-                                src={video.thumbnail || "/default-thumbnail.jpg"}
-                                alt={video.title}
-                                width={200}
-                                height={112}
-                                className="rounded-xl"
-                              />
-                              <div className="absolute inset-0 bg-black/10 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <div className="w-10 h-10 bg-white/5 backdrop-blur-sm rounded-full flex items-center justify-center">
-                                  <Play className="w-5 h-5 text-white ml-1" />
+                        <GlassCard
+                          hoverable
+                          className="group cursor-pointer"
+                          onClick={() => openVideoInNewTab(video.id)}
+                        >
+                          <div className="flex gap-4 items-start">
+                            <div className="relative flex-shrink-0">
+                              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-cyan-500/5 rounded-xl blur opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+                              <div className="relative">
+                                <Image
+                                  src={
+                                    video.thumbnail || "/default-thumbnail.jpg"
+                                  }
+                                  alt={video.title}
+                                  width={200}
+                                  height={112}
+                                  className="rounded-xl"
+                                />
+                                <div className="absolute inset-0 bg-black/10 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                  <div className="w-10 h-10 bg-white/5 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                    <Play className="w-5 h-5 text-white ml-1" />
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                          
-                          <div className="flex-1 space-y-2">
-                            <h3 className="font-semibold text-white leading-tight group-hover:text-purple-300 transition-colors duration-300">
-                              {video.title}
-                            </h3>
-                            
-                            <div className="flex flex-wrap gap-4 text-sm text-slate-400">
-                              <div className="flex items-center gap-1">
-                                <Eye className="w-4 h-4" />
-                                <span>{formatViews(video.viewCount)} vues</span>
+
+                            <div className="flex-1 space-y-2">
+                              <h3 className="font-semibold text-white leading-tight group-hover:text-purple-300 transition-colors duration-300">
+                                {video.title}
+                              </h3>
+
+                              <div className="flex flex-wrap gap-4 text-sm text-slate-400">
+                                <div className="flex items-center gap-1">
+                                  <Eye className="w-4 h-4" />
+                                  <span>
+                                    {formatViews(video.viewCount)} vues
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="w-4 h-4" />
+                                  <span>{formatDate(video.publishedAt)}</span>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                <span>{formatDate(video.publishedAt)}</span>
-                              </div>
+
+                              <p className="text-slate-300 text-sm line-clamp-2">
+                                {video.description ||
+                                  "Aucune description disponible"}
+                              </p>
                             </div>
-                            
-                            <p className="text-slate-300 text-sm line-clamp-2">
-                              {video.description || "Aucune description disponible"}
-                            </p>
+
+                            <div className="flex-shrink-0">
+                              <ExternalLink className="w-5 h-5 text-slate-400 group-hover:text-purple-400 transition-colors duration-300" />
+                            </div>
                           </div>
-                          
-                          <div className="flex-shrink-0">
-                            <ExternalLink className="w-5 h-5 text-slate-400 group-hover:text-purple-400 transition-colors duration-300" />
-                          </div>
-                        </div>
-                      </GlassCard>
-                    </m.div>
-                  ))}
+                        </GlassCard>
+                      </m.div>
+                    ),
+                  )}
                 </m.div>
               )}
             </AnimatePresence>
@@ -476,8 +522,8 @@ const MultiGamingPage = () => {
                 </p>
                 <button
                   onClick={() => {
-                    setSearchTerm('');
-                    setSortBy('recent');
+                    setSearchTerm("");
+                    setSortBy("recent");
                   }}
                   className="text-purple-400 hover:text-purple-300 transition-colors duration-300"
                 >

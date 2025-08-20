@@ -405,8 +405,6 @@ const SubscriberProgressSection: React.FC = () => {
                       viewport={{ once: true }}
                     />
                   </div>
-
- 
                 </div>
 
                 <div className="flex items-center justify-between md:text-sm text-xs text-slate-400">

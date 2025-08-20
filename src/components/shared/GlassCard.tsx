@@ -36,7 +36,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   if (hoverable) {
     return (
       <m.div
-        className={`glass-card ${paddingClasses[padding]} ${className} ${onClick ? 'cursor-pointer' : ''}`}
+        className={`glass-card ${paddingClasses[padding]} ${className} ${onClick ? "cursor-pointer" : ""}`}
         whileHover={{ scale: 1.02 }}
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
         onClick={onClick}
@@ -47,8 +47,8 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   }
 
   return (
-    <div 
-      className={`glass-card ${paddingClasses[padding]} ${className} ${onClick ? 'cursor-pointer' : ''}`}
+    <div
+      className={`glass-card ${paddingClasses[padding]} ${className} ${onClick ? "cursor-pointer" : ""}`}
       onClick={onClick}
     >
       {children}
