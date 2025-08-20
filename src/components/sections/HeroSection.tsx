@@ -99,7 +99,7 @@ const HeroSection: React.FC = () => {
 
             {/* CTA Button unifié */}
             <CTAButton
-              href="https://www.youtube.com/@Este_YTB_YT"
+              href="https://www.youtube.com/@Este_17000"
               leftIcon={Play}
               rightIcon={ExternalLink}
             >

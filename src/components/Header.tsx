@@ -25,7 +25,7 @@ export default function HeaderHamburger() {
   const navItems = [
     { label: "Accueil", href: "/", icon: Home, isExternal: false, color: "text-cyan-400" },
     { label: "Gaming", href: "/gaming", icon: Gamepad2, isExternal: false, color: "text-purple-400" },
-    { label: "YouTube", href: "https://www.youtube.com/@Este_YTB_YT", icon: Play, isExternal: true, color: "text-red-400" },
+    { label: "YouTube", href: "https://www.youtube.com/@Este_17000", icon: Play, isExternal: true, color: "text-red-400" },
     { label: "Discord", href: "https://discord.gg/t6U4hZDrnF", icon: Users, isExternal: true, color: "text-indigo-400" },
   ];
 

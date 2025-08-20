@@ -107,7 +107,7 @@ const Footer: React.FC = () => {
               <div className="space-y-4">
                 {/* YouTube Link */}
                 <m.a
-                  href="https://www.youtube.com/@Este_YTB_YT"
+                  href="https://www.youtube.com/@Este_17000"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-4 bg-slate-800/40 backdrop-blur-sm hover:bg-slate-800/60 border border-slate-700/50 hover:border-red-500/50 rounded-xl p-4 transition-all duration-300 group"

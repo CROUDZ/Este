@@ -355,7 +355,7 @@ const SubscriberProgressSection: React.FC = () => {
               {/* Call to Action */}
               <div className="text-center space-y-6">
                 <m.a
-                  href="https://www.youtube.com/@Este_YTB_YT"
+                  href="https://www.youtube.com/@Este_17000"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="cta-button-primary text-xl"
