@@ -177,8 +177,8 @@ const MultiGamingPage = () => {
             </div>
           </m.div>
 
-          {/* Latest Video Highlight */}
-          {data?.videoData && (
+          {/* Latest MultiGaming Video Highlight */}
+          {data?.playlistVideos && data.playlistVideos.length > 0 && (
             <m.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -188,19 +188,19 @@ const MultiGamingPage = () => {
               <GlassCard className="p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                  <h2 className="text-2xl font-bold text-white">Dernière vidéo</h2>
+                  <h2 className="text-2xl font-bold text-white">Dernière vidéo MultiGaming</h2>
                 </div>
                 
                 <div className="grid lg:grid-cols-2 gap-8 items-center">
                   <div 
                     className="relative group cursor-pointer"
-                    onClick={() => openVideoInNewTab(data.videoData!.id)}
+                    onClick={() => openVideoInNewTab(data.playlistVideos[0].id)}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-2xl blur opacity-5 group-hover:opacity-15 transition-opacity duration-300"></div>
                     <div className="relative">
                       <Image
-                        src={data.videoData.thumbnail || "/default-thumbnail.jpg"}
-                        alt={data.videoData.title}
+                        src={data.playlistVideos[0].thumbnail || "/default-thumbnail.jpg"}
+                        alt={data.playlistVideos[0].title}
                         width={600}
                         height={337}
                         className="w-full rounded-xl"
@@ -215,21 +215,21 @@ const MultiGamingPage = () => {
                   
                   <div className="space-y-4">
                     <h3 className="text-2xl font-bold text-white leading-tight">
-                      {data.videoData.title}
+                      {data.playlistVideos[0].title}
                     </h3>
                     <div className="flex flex-wrap gap-4 text-sm text-slate-300">
                       <div className="flex items-center gap-2">
                         <Eye className="w-4 h-4 text-purple-400" />
-                        <span>{formatViews(data.videoData.viewCount)} vues</span>
+                        <span>{formatViews(data.playlistVideos[0].viewCount)} vues</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-cyan-400" />
-                        <span>{formatDate(data.videoData.publishedAt || '')}</span>
+                        <span>{formatDate(data.playlistVideos[0].publishedAt)}</span>
                       </div>
                     </div>
                     <button 
                       className="cta-button-primary group"
-                      onClick={() => openVideoInNewTab(data.videoData!.id)}
+                      onClick={() => openVideoInNewTab(data.playlistVideos[0].id)}
                     >
                       <span>Regarder maintenant</span>
                       <ArrowUpRight className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
