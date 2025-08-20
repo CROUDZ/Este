@@ -9,6 +9,7 @@ interface GlassCardProps {
   className?: string;
   hoverable?: boolean;
   padding?: "sm" | "md" | "lg";
+  onClick?: () => void;
 }
 
 interface StatCardProps {
@@ -24,6 +25,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   className = "",
   hoverable = false,
   padding = "md",
+  onClick,
 }) => {
   const paddingClasses = {
     sm: "p-4",
@@ -34,9 +36,10 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   if (hoverable) {
     return (
       <m.div
-        className={`glass-card ${paddingClasses[padding]} ${className}`}
-        whileHover={{ scale: 1.05 }}
-        transition={{ type: "spring", stiffness: 300 }}
+        className={`glass-card ${paddingClasses[padding]} ${className} ${onClick ? 'cursor-pointer' : ''}`}
+        whileHover={{ scale: 1.02 }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        onClick={onClick}
       >
         {children}
       </m.div>
@@ -44,7 +47,10 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   }
 
   return (
-    <div className={`glass-card ${paddingClasses[padding]} ${className}`}>
+    <div 
+      className={`glass-card ${paddingClasses[padding]} ${className} ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+    >
       {children}
     </div>
   );

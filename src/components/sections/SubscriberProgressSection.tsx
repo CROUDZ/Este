@@ -181,7 +181,7 @@ const SubscriberProgressSection: React.FC = () => {
         ))}
       </div>
 
-      <div className="relative z-10 container mx-auto px-6">
+      <div className="relative z-10 container mx-auto px-0 sm:px-6 lg:px-12">
         <SectionHeader
           primaryIcon={Users}
           secondaryIcon={TrendingUp}
@@ -401,26 +401,15 @@ const SubscriberProgressSection: React.FC = () => {
                       }`}
                       initial={{ width: 0 }}
                       whileInView={{ width: `${percentage}%` }}
-                      transition={{ duration: 2.5, ease: "easeInOut" }}
+                      transition={{ duration: 1, ease: "easeIn" }}
                       viewport={{ once: true }}
                     />
                   </div>
 
-                  {/* Progress indicator */}
-                  {percentage > 5 && (
-                    <m.div
-                      className="absolute top-1/2 transform -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center"
-                      initial={{ left: "0%" }}
-                      whileInView={{ left: `${Math.min(percentage, 95)}%` }}
-                      transition={{ duration: 2.5, ease: "easeInOut" }}
-                      viewport={{ once: true }}
-                    >
-                      <div className="w-3 h-3 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full"></div>
-                    </m.div>
-                  )}
+ 
                 </div>
 
-                <div className="flex items-center justify-between text-sm text-slate-400">
+                <div className="flex items-center justify-between md:text-sm text-xs text-slate-400">
                   <span>Début</span>
                   <span className="text-center font-medium text-slate-300">
                     {subscriberCount && subscriberGoal - subscriberCount > 0
@@ -446,17 +435,17 @@ const SubscriberProgressSection: React.FC = () => {
                   <ExternalLink className="w-5 h-5" />
                 </m.a>
 
-                <div className="flex items-center justify-center gap-4 text-slate-300">
+                <div className="flex items-center md:flex-row flex-col justify-center gap-4 text-slate-300">
                   <div className="flex items-center gap-2">
                     <Gift className="w-5 h-5 text-yellow-400" />
                     <span className="text-sm">Contenu exclusif</span>
                   </div>
-                  <div className="w-1 h-4 bg-slate-600 rounded-full"></div>
+                  <div className="md:w-1 md:h-4 h-1 w-4 bg-slate-600 rounded-full"></div>
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-pink-400" />
                     <span className="text-sm">Communauté active</span>
                   </div>
-                  <div className="w-1 h-4 bg-slate-600 rounded-full"></div>
+                  <div className="md:w-1 md:h-4 h-1 w-4 bg-slate-600 rounded-full"></div>
                   <div className="flex items-center gap-2">
                     <Trophy className="w-5 h-5 text-cyan-400" />
                     <span className="text-sm">Surprises à chaque palier</span>

@@ -16,7 +16,7 @@ const HeroSection: React.FC = () => {
   const liveData = data?.liveData || { isLive: false, url: false };
 
   return (
-    <section className="relative min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 overflow-hidden pt-16">
+    <section className="flex flex-col relative min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 overflow-hidden pt-16 items-center text-center sm:items-start sm:text-left">
       <BackgroundElements />
 
       <div className="relative z-10 container mx-auto px-6 py-24">
@@ -57,7 +57,7 @@ const HeroSection: React.FC = () => {
           </div>
         </m.div>
 
-        <div className="grid lg:grid-cols-12 gap-12 items-center min-h-[70vh]">
+        <div className="grid lg:grid-cols-12 gap-12 items-center min-h-[70vh] text-center sm:text-left">
           {/* Section gauche - Contenu principal */}
           <m.div
             initial={{ opacity: 0, x: -60 }}
@@ -93,7 +93,7 @@ const HeroSection: React.FC = () => {
             </p>
 
             {/* Icons avec design unifié */}
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4 justify-center sm:justify-start">
               <div className="glass-card px-4 py-2">
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4 text-yellow-400" />

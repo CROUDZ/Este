@@ -21,7 +21,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
   accent,
 }) => {
   return (
-    <div className="text-center mb-20">
+    <div className="text-center mb-20 ">
       {/* Icônes d'en-tête unifiées */}
       <div className="section-header-icons">
         <div className="icon-circle-primary">
@@ -41,7 +41,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
         </div>
       )}
 
-      <h2 className="section-title">
+      <h2 className="section-title md:text-6xl sm:text-5xl text-4xl">
         {title}
         {subtitle && (
           <span className="block gradient-text-primary">{subtitle}</span>
