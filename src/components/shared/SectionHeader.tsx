@@ -18,7 +18,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
   title,
   subtitle,
   description,
-  accent
+  accent,
 }) => {
   return (
     <div className="text-center mb-20">
@@ -44,15 +44,11 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
       <h2 className="section-title">
         {title}
         {subtitle && (
-          <span className="block gradient-text-primary">
-            {subtitle}
-          </span>
+          <span className="block gradient-text-primary">{subtitle}</span>
         )}
       </h2>
 
-      <p className="section-subtitle">
-        {description}
-      </p>
+      <p className="section-subtitle">{description}</p>
     </div>
   );
 };

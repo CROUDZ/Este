@@ -7,7 +7,7 @@ const config: Config = {
     "./src/pages/**/*.{ts,tsx,js,jsx}",
     "./src/**/*.{ts,tsx,js,jsx}",
   ],
-  
+
   theme: {
     extend: {
       colors: {

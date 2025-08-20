@@ -53,7 +53,7 @@ exports.handler = async function () {
 
   try {
     const requests = [];
-    
+
     // Requête pour la dernière vidéo si channelId fourni
     if (channelId) {
       const latestVideoUrl = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet&order=date&maxResults=1&type=video`;
@@ -77,7 +77,11 @@ exports.handler = async function () {
     // Gérer les erreurs de quota pour les requêtes de base
     if (searchRes && !searchRes.ok) {
       const errorBody = await searchRes.text();
-      console.error("Erreur lors de la récupération des vidéos (latest):", searchRes.status, errorBody);
+      console.error(
+        "Erreur lors de la récupération des vidéos (latest):",
+        searchRes.status,
+        errorBody,
+      );
 
       if (searchRes.status === 403) {
         console.error("QUOTA EXCEEDED - Setting 24h cache");
@@ -118,7 +122,7 @@ exports.handler = async function () {
 
     if (searchRes) {
       const searchData = await searchRes.json();
-      
+
       if (searchData.items && searchData.items.length > 0) {
         const video = searchData.items[0];
         const videoId = video.id.videoId;
@@ -127,7 +131,7 @@ exports.handler = async function () {
         const statsRes = await fetch(
           `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${videoId}&part=statistics,contentDetails`,
         );
-        
+
         let stats = null;
         if (statsRes.ok) {
           const statsData = await statsRes.json();
@@ -190,8 +194,11 @@ exports.handler = async function () {
         playlistVideos = await fetchAllPlaylistVideos(API_KEY, playlistId);
         console.log(`Retrieved ${playlistVideos.length} videos from playlist`);
       } catch (e) {
-        console.warn("Erreur lors de la récupération de la playlist :", e.message);
-        if (e.message.includes('403')) {
+        console.warn(
+          "Erreur lors de la récupération de la playlist :",
+          e.message,
+        );
+        if (e.message.includes("403")) {
           // Si quota dépassé pour la playlist, on continue sans
           console.log("Quota dépassé pour la playlist, on continue sans");
         }
@@ -212,7 +219,11 @@ exports.handler = async function () {
     cache.timestamp = now;
     cache.quotaExceeded = false;
 
-    console.log("Response payload prepared with", playlistVideos.length, "playlist videos");
+    console.log(
+      "Response payload prepared with",
+      playlistVideos.length,
+      "playlist videos",
+    );
 
     return {
       statusCode: 200,
@@ -236,7 +247,7 @@ exports.handler = async function () {
 // Fonction pour récupérer toutes les vidéos d'une playlist avec pagination
 async function fetchAllPlaylistVideos(apiKey, playlistId, maxResults = 50) {
   let allVideos = [];
-  let nextPageToken = '';
+  let nextPageToken = "";
   let requestCount = 0;
   const maxRequests = 10; // Limite pour éviter les boucles infinies
 
@@ -244,86 +255,93 @@ async function fetchAllPlaylistVideos(apiKey, playlistId, maxResults = 50) {
     do {
       requestCount++;
       if (requestCount > maxRequests) {
-        console.warn(`Limite de ${maxRequests} requêtes atteinte pour la playlist`);
+        console.warn(
+          `Limite de ${maxRequests} requêtes atteinte pour la playlist`,
+        );
         break;
       }
 
-      const url = `https://www.googleapis.com/youtube/v3/playlistItems?key=${apiKey}&playlistId=${playlistId}&part=snippet,contentDetails&maxResults=${maxResults}${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`;
-      
+      const url = `https://www.googleapis.com/youtube/v3/playlistItems?key=${apiKey}&playlistId=${playlistId}&part=snippet,contentDetails&maxResults=${maxResults}${nextPageToken ? `&pageToken=${nextPageToken}` : ""}`;
+
       console.log(`Fetching playlist page ${requestCount}...`);
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         if (response.status === 403) {
-          throw new Error('403 - Quota exceeded');
+          throw new Error("403 - Quota exceeded");
         }
         throw new Error(`HTTP ${response.status}: ${await response.text()}`);
       }
 
       const data = await response.json();
-      
+
       if (data.items) {
         // Récupérer les IDs des vidéos pour obtenir les statistiques
         const videoIds = data.items
-          .map(item => item.contentDetails?.videoId)
+          .map((item) => item.contentDetails?.videoId)
           .filter(Boolean);
 
         // Récupérer les statistiques en batch
         let videoStats = {};
         if (videoIds.length > 0) {
           try {
-            const statsUrl = `https://www.googleapis.com/youtube/v3/videos?key=${apiKey}&id=${videoIds.join(',')}&part=statistics,contentDetails`;
+            const statsUrl = `https://www.googleapis.com/youtube/v3/videos?key=${apiKey}&id=${videoIds.join(",")}&part=statistics,contentDetails`;
             const statsResponse = await fetch(statsUrl);
-            
+
             if (statsResponse.ok) {
               const statsData = await statsResponse.json();
               if (statsData.items) {
-                statsData.items.forEach(item => {
+                statsData.items.forEach((item) => {
                   videoStats[item.id] = item;
                 });
               }
             }
           } catch (e) {
-            console.warn("Erreur lors de la récupération des stats:", e.message);
+            console.warn(
+              "Erreur lors de la récupération des stats:",
+              e.message,
+            );
           }
         }
 
         // Traiter les vidéos
-        const videos = data.items.map(item => {
-          const videoId = item.contentDetails?.videoId;
-          const stats = videoStats[videoId];
-          
-          return {
-            id: videoId,
-            title: item.snippet?.title || 'Titre non disponible',
-            description: item.snippet?.description || '',
-            thumbnail:
-              item.snippet?.thumbnails?.maxres?.url ||
-              item.snippet?.thumbnails?.high?.url ||
-              item.snippet?.thumbnails?.medium?.url ||
-              item.snippet?.thumbnails?.default?.url ||
-              null,
-            publishedAt: item.snippet?.publishedAt || item.contentDetails?.videoPublishedAt,
-            channelTitle: item.snippet?.channelTitle || '',
-            position: item.snippet?.position || allVideos.length,
-            viewCount: stats?.statistics?.viewCount ?? null,
-            duration: stats?.contentDetails?.duration ?? null,
-            likeCount: stats?.statistics?.likeCount ?? null,
-          };
-        }).filter(video => video.id); // Filtrer les vidéos sans ID (vidéos supprimées/privées)
+        const videos = data.items
+          .map((item) => {
+            const videoId = item.contentDetails?.videoId;
+            const stats = videoStats[videoId];
+
+            return {
+              id: videoId,
+              title: item.snippet?.title || "Titre non disponible",
+              description: item.snippet?.description || "",
+              thumbnail:
+                item.snippet?.thumbnails?.maxres?.url ||
+                item.snippet?.thumbnails?.high?.url ||
+                item.snippet?.thumbnails?.medium?.url ||
+                item.snippet?.thumbnails?.default?.url ||
+                null,
+              publishedAt:
+                item.snippet?.publishedAt ||
+                item.contentDetails?.videoPublishedAt,
+              channelTitle: item.snippet?.channelTitle || "",
+              position: item.snippet?.position || allVideos.length,
+              viewCount: stats?.statistics?.viewCount ?? null,
+              duration: stats?.contentDetails?.duration ?? null,
+              likeCount: stats?.statistics?.likeCount ?? null,
+            };
+          })
+          .filter((video) => video.id); // Filtrer les vidéos sans ID (vidéos supprimées/privées)
 
         allVideos.push(...videos);
       }
 
-      nextPageToken = data.nextPageToken || '';
-      
+      nextPageToken = data.nextPageToken || "";
+
       // Petite pause pour éviter de surcharger l'API
       if (nextPageToken && requestCount < maxRequests) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
-
     } while (nextPageToken && requestCount < maxRequests);
-
   } catch (error) {
     console.error("Erreur lors de la récupération de la playlist:", error);
     throw error;

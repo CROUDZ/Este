@@ -11,7 +11,12 @@
 
   /* Background Gradients */
   --bg-primary: linear-gradient(135deg, #0f172a 0%, #7c3aed 50%, #1e293b 100%);
-  --bg-secondary: linear-gradient(135deg, #1e293b 0%, #7c3aed 50%, #0f172a 100%);
+  --bg-secondary: linear-gradient(
+    135deg,
+    #1e293b 0%,
+    #7c3aed 50%,
+    #0f172a 100%
+  );
 
   /* Glass Effects */
   --glass-bg: rgba(30, 41, 59, 0.3);

@@ -9,8 +9,8 @@ interface CTAButtonProps {
   children: React.ReactNode;
   leftIcon?: LucideIcon;
   rightIcon?: LucideIcon;
-  variant?: 'primary' | 'secondary' | 'live';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: "primary" | "secondary" | "live";
+  size?: "sm" | "md" | "lg";
   className?: string;
   external?: boolean;
 }
@@ -20,29 +20,33 @@ const CTAButton: React.FC<CTAButtonProps> = ({
   children,
   leftIcon: LeftIcon,
   rightIcon: RightIcon,
-  variant = 'primary',
-  size = 'md',
-  className = '',
-  external = true
+  variant = "primary",
+  size = "md",
+  className = "",
+  external = true,
 }) => {
-  const baseClasses = "inline-flex items-center gap-3 font-semibold transition-all duration-300 rounded-xl";
-  
+  const baseClasses =
+    "inline-flex items-center gap-3 font-semibold transition-all duration-300 rounded-xl";
+
   const variantClasses = {
     primary: "cta-button-primary shadow-lg hover:shadow-purple-500/25",
-    secondary: "bg-slate-700 hover:bg-slate-600 text-white border border-slate-600",
-    live: "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-red-500/25"
+    secondary:
+      "bg-slate-700 hover:bg-slate-600 text-white border border-slate-600",
+    live: "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-red-500/25",
   };
 
   const sizeClasses = {
     sm: "px-4 py-2 text-sm",
     md: "px-6 py-3",
-    lg: "px-8 py-4 text-lg"
+    lg: "px-8 py-4 text-lg",
   };
 
-  const externalProps = external ? {
-    target: "_blank",
-    rel: "noopener noreferrer"
-  } : {};
+  const externalProps = external
+    ? {
+        target: "_blank",
+        rel: "noopener noreferrer",
+      }
+    : {};
 
   return (
     <m.a

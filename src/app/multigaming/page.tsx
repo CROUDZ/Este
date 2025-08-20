@@ -1,14 +1,21 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import { youtubeService, YouTubeData } from "@/services/youtubeService"; // Ajustez le chemin selon votre structure
 
-type PlaylistVideo = {
+// Import the PlaylistVideo interface from the service
+interface PlaylistVideo {
   id: string;
   title: string;
-  thumbnail: string | null; // Allow null for thumbnail
-  viewCount: number | null | undefined; // Allow null or undefined for viewCount
-};
-import Image from 'next/image';
-import { youtubeService, YouTubeData } from '@/services/youtubeService'; // Ajustez le chemin selon votre structure
+  description: string;
+  thumbnail: string | null;
+  publishedAt: string;
+  channelTitle: string;
+  position: number;
+  viewCount?: string | null;
+  duration?: string | null;
+  likeCount?: string | null;
+}
 
 const SimpleYouTubePage = () => {
   const [data, setData] = useState<YouTubeData | null>(null);
@@ -20,7 +27,7 @@ const SimpleYouTubePage = () => {
         const result = await youtubeService.getData();
         setData(result);
       } catch (error) {
-        console.error('Erreur:', error);
+        console.error("Erreur:", error);
       } finally {
         setLoading(false);
       }
@@ -42,8 +49,8 @@ const SimpleYouTubePage = () => {
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-4">Dernière vidéo</h2>
           <div className="border rounded-lg p-4">
-            <Image 
-              src={data.videoData.thumbnail || '/default-thumbnail.jpg'} 
+            <Image
+              src={data.videoData.thumbnail || "/default-thumbnail.jpg"}
               alt={data.videoData.title}
               width={320}
               height={180}
@@ -62,13 +69,13 @@ const SimpleYouTubePage = () => {
         <h2 className="text-xl font-semibold mb-4">
           Toutes les vidéos ({data?.playlistVideos?.length || 0})
         </h2>
-        
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {data?.playlistVideos?.map((video: PlaylistVideo) => (
             <div key={video.id} className="border rounded-lg p-4">
-              <Image 
-                src={video.thumbnail || '/default-thumbnail.jpg'} // Handle null case
-                alt={video.title}
+              <Image
+                src={video.thumbnail || "/default-thumbnail.jpg"} // Handle null case
+                alt={video.title ?? ""}
                 width={320}
                 height={180}
                 className="w-full mb-3 rounded"
@@ -77,7 +84,7 @@ const SimpleYouTubePage = () => {
                 {video.title}
               </h3>
               <p className="text-xs text-gray-500">
-                {video.viewCount ?? 'N/A'} vues {/* Handle null or undefined */}
+                {video.viewCount ?? "N/A"} vues {/* Handle null or undefined */}
               </p>
             </div>
           ))}

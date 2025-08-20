@@ -77,10 +77,7 @@ const LastVideosSection: React.FC = () => {
           viewport={{ once: true }}
           className="flex justify-center mb-12"
         >
-          <m.div
-            className="relative"
-            whileHover={{ scale: 1.05 }}
-          >
+          <m.div className="relative" whileHover={{ scale: 1.05 }}>
             <div className="absolute -inset-2 bg-gradient-to-r from-purple-400 to-cyan-400 rounded-2xl blur opacity-75"></div>
             <div className="relative bg-slate-800 p-2 rounded-2xl">
               <Image
@@ -105,10 +102,7 @@ const LastVideosSection: React.FC = () => {
             className="flex justify-center items-center py-32"
           >
             <div className="text-center">
-              <LoadingSpinner
-                size="lg"
-                message="Récupération du contenu..."
-              />
+              <LoadingSpinner size="lg" message="Récupération du contenu..." />
               <m.p
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity }}
@@ -171,7 +165,10 @@ const LastVideosSection: React.FC = () => {
                       transition={{ duration: 2, repeat: Infinity }}
                       className="w-24 h-24 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto"
                     >
-                      <Play className="w-12 h-12 text-white ml-1" fill="currentColor" />
+                      <Play
+                        className="w-12 h-12 text-white ml-1"
+                        fill="currentColor"
+                      />
                     </m.div>
                     <div className="absolute -inset-4 border-2 border-red-400/50 rounded-full animate-ping"></div>
                   </div>
@@ -181,7 +178,8 @@ const LastVideosSection: React.FC = () => {
                       🔴 LIVE EN COURS !
                     </h3>
                     <p className="text-xl text-slate-300 mb-8">
-                      Je suis actuellement en direct — rejoignez l'aventure maintenant !
+                      Je suis actuellement en direct — rejoignez l'aventure
+                      maintenant !
                     </p>
                   </div>
 

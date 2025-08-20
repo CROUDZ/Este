@@ -27,16 +27,28 @@ const HeroSection: React.FC = () => {
           transition={{ duration: 0.6 }}
           className="flex justify-center mb-16"
         >
-          <div className={`flex items-center gap-3 px-6 py-3 rounded-full backdrop-blur-lg border ${
-            liveData.isLive
-              ? "bg-red-500/10 border-red-400/30 text-red-300"
-              : "bg-slate-700/30 border-slate-500/30 text-slate-300"
-          }`}>
-            <div className={`w-2 h-2 rounded-full ${liveData.isLive ? 'bg-red-400 animate-pulse' : 'bg-slate-400'}`}></div>
+          <div
+            className={`flex items-center gap-3 px-6 py-3 rounded-full backdrop-blur-lg border ${
+              liveData.isLive
+                ? "bg-red-500/10 border-red-400/30 text-red-300"
+                : "bg-slate-700/30 border-slate-500/30 text-slate-300"
+            }`}
+          >
+            <div
+              className={`w-2 h-2 rounded-full ${liveData.isLive ? "bg-red-400 animate-pulse" : "bg-slate-400"}`}
+            ></div>
             <span className="text-sm font-medium">
               {liveData.isLive ? (
                 <>
-                  LIVE - <a href={liveData.url || "#"} target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">Minecraft Bedwars</a>
+                  LIVE -{" "}
+                  <a
+                    href={liveData.url || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:no-underline"
+                  >
+                    Minecraft Bedwars
+                  </a>
                 </>
               ) : (
                 "Actuellement hors ligne"
@@ -46,7 +58,6 @@ const HeroSection: React.FC = () => {
         </m.div>
 
         <div className="grid lg:grid-cols-12 gap-12 items-center min-h-[70vh]">
-          
           {/* Section gauche - Contenu principal */}
           <m.div
             initial={{ opacity: 0, x: -60 }}
@@ -71,14 +82,14 @@ const HeroSection: React.FC = () => {
               </h2>
               <h1 className="section-title">
                 Gaming &
-                <span className="block gradient-text-secondary">
-                  Aventures
-                </span>
+                <span className="block gradient-text-secondary">Aventures</span>
               </h1>
             </div>
 
             <p className="section-subtitle">
-              Plongez dans l'univers Minecraft avec 8 ans d'expertise ! PvP intense, constructions épiques, mods exclusifs et découvertes multi-gaming vous attendent.
+              Plongez dans l'univers Minecraft avec 8 ans d'expertise ! PvP
+              intense, constructions épiques, mods exclusifs et découvertes
+              multi-gaming vous attendent.
             </p>
 
             {/* Icons avec design unifié */}
@@ -125,10 +136,10 @@ const HeroSection: React.FC = () => {
               transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
               className="absolute inset-4 w-72 h-72 border border-cyan-400/20 rounded-full"
             />
-            
+
             {/* Centre lumineux */}
             <div className="absolute inset-8 bg-gradient-to-br from-purple-400/10 to-cyan-400/10 rounded-full backdrop-blur-sm"></div>
-            
+
             <m.div
               whileHover={{ scale: 1.1, rotate: 5 }}
               transition={{ type: "spring", stiffness: 300 }}
@@ -160,7 +171,7 @@ const HeroSection: React.FC = () => {
                 label="Vidéos"
                 iconColor="text-red-400"
               />
-              
+
               <StatCard
                 icon={Users}
                 value="200 +"
@@ -171,9 +182,12 @@ const HeroSection: React.FC = () => {
 
             {/* Section Discord avec design unifié */}
             <GlassCard>
-              <h3 className="text-xl font-bold text-white mb-3">Rejoins la communauté</h3>
+              <h3 className="text-xl font-bold text-white mb-3">
+                Rejoins la communauté
+              </h3>
               <p className="text-slate-300 mb-4 text-sm">
-                Connecte-toi avec d'autres joueurs, partage tes créations et reste informé des dernières news !
+                Connecte-toi avec d'autres joueurs, partage tes créations et
+                reste informé des dernières news !
               </p>
               <CTAButton
                 href="https://discord.gg/t6U4hZDrnF"

@@ -23,10 +23,34 @@ export default function HeaderHamburger() {
   const firstLinkRef = useRef<HTMLAnchorElement | null>(null);
 
   const navItems = [
-    { label: "Accueil", href: "/", icon: Home, isExternal: false, color: "text-cyan-400" },
-    { label: "MultiGaming", href: "/multigaming", icon: Gamepad2, isExternal: false, color: "text-purple-400" },
-    { label: "YouTube", href: "https://www.youtube.com/@Este_17000", icon: Play, isExternal: true, color: "text-red-400" },
-    { label: "Discord", href: "https://discord.gg/t6U4hZDrnF", icon: Users, isExternal: true, color: "text-indigo-400" },
+    {
+      label: "Accueil",
+      href: "/",
+      icon: Home,
+      isExternal: false,
+      color: "text-cyan-400",
+    },
+    {
+      label: "MultiGaming",
+      href: "/multigaming",
+      icon: Gamepad2,
+      isExternal: false,
+      color: "text-purple-400",
+    },
+    {
+      label: "YouTube",
+      href: "https://www.youtube.com/@Este_17000",
+      icon: Play,
+      isExternal: true,
+      color: "text-red-400",
+    },
+    {
+      label: "Discord",
+      href: "https://discord.gg/t6U4hZDrnF",
+      icon: Users,
+      isExternal: true,
+      color: "text-indigo-400",
+    },
   ];
 
   useEffect(() => {
@@ -42,7 +66,7 @@ export default function HeaderHamburger() {
       if (isOpen && e.key === "Tab") {
         // simple focus-trap behaviour: if shift+tab from first element -> focus last, or if tab from last -> back to first
         const focusable = panelRef.current?.querySelectorAll(
-          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
         );
         if (!focusable || focusable.length === 0) return;
         const first = focusable[0] as HTMLElement;
@@ -60,7 +84,11 @@ export default function HeaderHamburger() {
     const onClick = (e: MouseEvent) => {
       if (!isOpen) return;
       const target = e.target as HTMLElement;
-      if (panelRef.current && !panelRef.current.contains(target) && !target.closest('.menu-button')) {
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(target) &&
+        !target.closest(".menu-button")
+      ) {
         setIsOpen(false);
       }
     };
@@ -93,19 +121,31 @@ export default function HeaderHamburger() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.45 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border border-transparent ${
-          scrolled ? "bg-slate-900/90 backdrop-blur-xl border-b border-slate-700/50 shadow-2xl" : "bg-transparent"
+          scrolled
+            ? "bg-slate-900/90 backdrop-blur-xl border-b border-slate-700/50 shadow-2xl"
+            : "bg-transparent"
         }`}
       >
         <nav className="container mx-auto flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className={`absolute -inset-1 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full blur opacity-60`}></div>
-              <Image src={Profile} alt="Este_YTB Avatar" width={44} height={44} className="relative rounded-full bg-slate-800 p-0.5" />
+              <div
+                className={`absolute -inset-1 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full blur opacity-60`}
+              ></div>
+              <Image
+                src={Profile}
+                alt="Este_YTB Avatar"
+                width={44}
+                height={44}
+                className="relative rounded-full bg-slate-800 p-0.5"
+              />
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-slate-900 animate-pulse" />
             </div>
 
             <div>
-              <h1 className="text-xl font-bold text-transparent bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text">Este_YTB</h1>
+              <h1 className="text-xl font-bold text-transparent bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text">
+                Este_YTB
+              </h1>
               <div className="flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-yellow-400" />
                 <p className="text-xs text-slate-400">Gaming Creator</p>
@@ -124,8 +164,15 @@ export default function HeaderHamburger() {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.96 }}
             >
-              <m.div animate={isOpen ? { rotate: 180 } : { rotate: 0 }} transition={{ duration: 0.28 }}>
-                {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              <m.div
+                animate={isOpen ? { rotate: 180 } : { rotate: 0 }}
+                transition={{ duration: 0.28 }}
+              >
+                {isOpen ? (
+                  <X className="w-6 h-6" />
+                ) : (
+                  <Menu className="w-6 h-6" />
+                )}
               </m.div>
             </m.button>
           </div>
@@ -160,7 +207,13 @@ export default function HeaderHamburger() {
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full blur opacity-60" />
-                    <Image src={Profile} alt="Avatar" width={48} height={48} className="relative rounded-full bg-slate-800 p-0.5" />
+                    <Image
+                      src={Profile}
+                      alt="Avatar"
+                      width={48}
+                      height={48}
+                      className="relative rounded-full bg-slate-800 p-0.5"
+                    />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold">Menu</h3>
@@ -194,16 +247,22 @@ export default function HeaderHamburger() {
                       transition={{ delay: 0.03 * i }}
                       className="flex items-center gap-4 p-3 rounded-xl bg-slate-800/60 hover:bg-slate-800/70 transition-colors border border-transparent hover:border-slate-700/50"
                     >
-                      <div className={`w-12 h-12 rounded-xl bg-slate-800/50 flex items-center justify-center`}> 
+                      <div
+                        className={`w-12 h-12 rounded-xl bg-slate-800/50 flex items-center justify-center`}
+                      >
                         <Icon className={`w-5 h-5 ${item.color}`} />
                       </div>
 
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{item.label}</span>
-                          {item.isExternal && <ExternalLink className="w-3 h-3 opacity-60" />}
+                          {item.isExternal && (
+                            <ExternalLink className="w-3 h-3 opacity-60" />
+                          )}
                         </div>
-                        <p className="text-xs text-slate-500">{item.isExternal ? "Lien externe" : "Page interne"}</p>
+                        <p className="text-xs text-slate-500">
+                          {item.isExternal ? "Lien externe" : "Page interne"}
+                        </p>
                       </div>
 
                       <div className="text-slate-400 text-sm">→</div>

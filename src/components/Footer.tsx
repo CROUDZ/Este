@@ -3,7 +3,14 @@
 import React from "react";
 import Image from "next/image";
 import { m } from "framer-motion";
-import { Youtube, MessageCircle, Heart, ExternalLink, Code, Sparkles } from "lucide-react";
+import {
+  Youtube,
+  MessageCircle,
+  Heart,
+  ExternalLink,
+  Code,
+  Sparkles,
+} from "lucide-react";
 
 import Profile from "@/assets/profile.webp";
 
@@ -22,23 +29,23 @@ const Footer: React.FC = () => {
           <m.div
             key={i}
             className={`absolute ${
-              i % 2 === 0 
-                ? 'w-2 h-2 bg-cyan-400/20 rounded-full' 
-                : 'w-1 h-4 bg-purple-400/20 rounded-full'
+              i % 2 === 0
+                ? "w-2 h-2 bg-cyan-400/20 rounded-full"
+                : "w-1 h-4 bg-purple-400/20 rounded-full"
             }`}
-            animate={{ 
+            animate={{
               y: [0, -20, 0],
-              opacity: [0.2, 0.6, 0.2]
+              opacity: [0.2, 0.6, 0.2],
             }}
-            transition={{ 
-              duration: 3 + i * 0.5, 
-              delay: i * 0.8, 
-              repeat: Infinity, 
-              ease: "easeInOut" 
+            transition={{
+              duration: 3 + i * 0.5,
+              delay: i * 0.8,
+              repeat: Infinity,
+              ease: "easeInOut",
             }}
-            style={{ 
-              left: `${20 + i * 20}%`, 
-              bottom: `${20 + (i % 2) * 30}%` 
+            style={{
+              left: `${20 + i * 20}%`,
+              bottom: `${20 + (i % 2) * 30}%`,
             }}
           />
         ))}
@@ -52,10 +59,8 @@ const Footer: React.FC = () => {
         className="relative z-10 container mx-auto px-6 py-16"
       >
         <div className="max-w-6xl mx-auto">
-          
           {/* Main Footer Content */}
           <div className="grid lg:grid-cols-3 gap-12 lg:gap-16 items-center mb-12">
-            
             {/* Brand Section */}
             <m.div
               initial={{ opacity: 0, x: -30 }}
@@ -77,19 +82,18 @@ const Footer: React.FC = () => {
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <h2 className="text-2xl font-bold text-transparent bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text">
                     Este_YTB
                   </h2>
-                  <p className="text-slate-400 text-sm">
-                    Gaming & Aventures
-                  </p>
+                  <p className="text-slate-400 text-sm">Gaming & Aventures</p>
                 </div>
               </div>
 
               <p className="text-slate-300 leading-relaxed max-w-sm mx-auto lg:mx-0">
-                Rejoignez une communauté passionnée de gaming, de créations Minecraft et d'aventures épiques !
+                Rejoignez une communauté passionnée de gaming, de créations
+                Minecraft et d'aventures épiques !
               </p>
             </m.div>
 
@@ -103,7 +107,7 @@ const Footer: React.FC = () => {
               <h3 className="text-xl font-semibold text-white text-center mb-8">
                 Retrouvez-moi sur
               </h3>
-              
+
               <div className="space-y-4">
                 {/* YouTube Link */}
                 <m.a
@@ -118,7 +122,7 @@ const Footer: React.FC = () => {
                   </div>
                   <div className="flex-1">
                     <p className="text-white font-medium">YouTube</p>
-                    <p className="text-slate-400 text-sm">{'[@Este_Ytb]'}</p>
+                    <p className="text-slate-400 text-sm">{"[@Este_Ytb]"}</p>
                   </div>
                   <ExternalLink className="w-4 h-4 text-slate-500 group-hover:text-slate-300 transition-colors" />
                 </m.a>
@@ -155,7 +159,7 @@ const Footer: React.FC = () => {
                   <Code className="w-5 h-5 text-cyan-400" />
                   <span className="font-medium">Développé par</span>
                 </div>
-                
+
                 <m.a
                   href="https://giovweb.com/"
                   target="_blank"
@@ -168,7 +172,10 @@ const Footer: React.FC = () => {
                       GiovWeb
                     </div>
                     <div className="flex items-center gap-2 justify-center lg:justify-end text-slate-400 text-sm">
-                      <Heart className="w-4 h-4 text-pink-400" fill="currentColor" />
+                      <Heart
+                        className="w-4 h-4 text-pink-400"
+                        fill="currentColor"
+                      />
                       <span>Réalisé avec passion</span>
                     </div>
                   </div>
@@ -190,7 +197,6 @@ const Footer: React.FC = () => {
             className="border-t border-slate-700/50 pt-8"
           >
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              
               <div className="flex items-center gap-6 text-sm text-slate-400">
                 <span>© {new Date().getFullYear()} Este_YTB</span>
                 <div className="w-1 h-4 bg-slate-600 rounded-full"></div>

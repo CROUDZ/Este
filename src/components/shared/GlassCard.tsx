@@ -8,7 +8,7 @@ interface GlassCardProps {
   children: React.ReactNode;
   className?: string;
   hoverable?: boolean;
-  padding?: 'sm' | 'md' | 'lg';
+  padding?: "sm" | "md" | "lg";
 }
 
 interface StatCardProps {
@@ -19,16 +19,16 @@ interface StatCardProps {
   hoverable?: boolean;
 }
 
-export const GlassCard: React.FC<GlassCardProps> = ({ 
-  children, 
-  className = "", 
+export const GlassCard: React.FC<GlassCardProps> = ({
+  children,
+  className = "",
   hoverable = false,
-  padding = 'md'
+  padding = "md",
 }) => {
   const paddingClasses = {
-    sm: 'p-4',
-    md: 'p-6',
-    lg: 'p-8'
+    sm: "p-4",
+    md: "p-6",
+    lg: "p-8",
   };
 
   if (hoverable) {
@@ -50,12 +50,12 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   );
 };
 
-export const StatCard: React.FC<StatCardProps> = ({ 
-  icon: Icon, 
-  value, 
-  label, 
+export const StatCard: React.FC<StatCardProps> = ({
+  icon: Icon,
+  value,
+  label,
   iconColor = "text-cyan-400",
-  hoverable = true 
+  hoverable = true,
 }) => {
   return (
     <GlassCard hoverable={hoverable}>
