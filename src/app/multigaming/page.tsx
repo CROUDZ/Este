@@ -10,7 +10,6 @@ import {
   Grid3X3,
   List,
   Search,
-  Filter,
   ArrowUpRight,
   Gamepad2,
   Users,
@@ -19,6 +18,14 @@ import {
 import { youtubeService, YouTubeData } from "@/services/youtubeService";
 import { GlassCard } from "@/components/shared/GlassCard";
 import BackgroundElements from "@/components/shared/BackgroundElements";
+import { SectionLoader } from "@/components/LoadingSpinner";
+import { SortDropdown } from "@/components/SortDropdown";
+import dynamic from "next/dynamic";
+
+const Header = dynamic(() => import('@/components/Header'), {
+  ssr: false,
+  loading: () => <SectionLoader message="Chargement de l'en-tête..." />,
+});
 
 // Import the PlaylistVideo interface from the service
 interface PlaylistVideo {
@@ -134,6 +141,8 @@ const MultiGamingPage = () => {
   }
 
   return (
+    <>
+          <Header />
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 relative overflow-hidden">
       <BackgroundElements />
 
@@ -294,20 +303,7 @@ const MultiGamingPage = () => {
                 <div className="flex gap-3 items-center">
                   {/* Sort Filter */}
                   <div className="relative">
-                    <select
-                      value={sortBy}
-                      onChange={(e) =>
-                        setSortBy(
-                          e.target.value as "recent" | "popular" | "title",
-                        )
-                      }
-                      className="appearance-none bg-slate-800/50 border border-slate-600/50 rounded-xl px-4 py-3 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
-                    >
-                      <option value="recent">Plus récentes</option>
-                      <option value="popular">Plus populaires</option>
-                      <option value="title">Par titre</option>
-                    </select>
-                    <Filter className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <SortDropdown sortBy={sortBy} setSortBy={(k) => setSortBy(k)} />
                   </div>
 
                   {/* View Mode Toggle */}
@@ -535,6 +531,7 @@ const MultiGamingPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

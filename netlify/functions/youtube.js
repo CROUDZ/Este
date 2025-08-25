@@ -1,3 +1,5 @@
+// netlify/functions/youtube.js
+
 // Cache simple en mémoire (sera réinitialisé à chaque déploiement)
 let cache = {
   data: null,
@@ -7,25 +9,59 @@ let cache = {
   quotaExceeded: false,
 };
 
-exports.handler = async function () {
+// Helper CORS — on peut restreindre en lisant ALLOWED_ORIGINS env var si souhaité
+function buildCorsHeaders(origin) {
+  const allowedOrigins = (
+    process.env.ALLOWED_ORIGINS || "http://localhost:3000"
+  ).split(",");
+  const allowOrigin = allowedOrigins.includes(origin)
+    ? origin
+    : allowedOrigins[0] || "*";
+
+  return {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Headers":
+      "Content-Type, Authorization, X-Requested-With",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    Vary: "Origin",
+    "Content-Type": "application/json; charset=utf-8",
+  };
+}
+
+exports.handler = async function (event) {
+  const origin = (event && event.headers && event.headers.origin) || "";
+  const corsHeaders = buildCorsHeaders(origin);
+
+  // Répondre aux préflight OPTIONS rapidement
+  if (event && event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 204,
+      headers: corsHeaders,
+      body: "", // pas de body pour OPTIONS
+    };
+  }
+
   const API_KEY = process.env.YOUTUBE_API_KEY;
   const channelId = process.env.YOUTUBE_CHANNEL_ID;
   const playlistId = process.env.YOUTUBE_PLAYLIST_ID;
 
   console.log("start youtube function");
 
-  // Si quota dépassé récemment, retourner données par défaut pendant 24h
   const now = Date.now();
+
+  // Si quota dépassé récemment, retourner données par défaut pendant 24h
   if (cache.quotaExceeded && now - cache.errorTimestamp < 24 * 60 * 60 * 1000) {
     console.log("Quota exceeded recently, returning default data");
     const fallbackData = {
       videoData: null,
       liveData: { isLive: false, url: false },
       playlistVideos: [],
+      channelData: { subscriberCount: null },
     };
     return {
       statusCode: 200,
       headers: {
+        ...corsHeaders,
         "Cache-Control": "public, max-age=3600",
       },
       body: JSON.stringify(fallbackData),
@@ -38,6 +74,7 @@ exports.handler = async function () {
     return {
       statusCode: 200,
       headers: {
+        ...corsHeaders,
         "Cache-Control": "public, max-age=300",
       },
       body: JSON.stringify(cache.data),
@@ -47,6 +84,7 @@ exports.handler = async function () {
   if (!API_KEY) {
     return {
       statusCode: 500,
+      headers: corsHeaders,
       body: JSON.stringify({ error: "API key manquante" }),
     };
   }
@@ -71,12 +109,11 @@ exports.handler = async function () {
     }
 
     console.log("Fetching data...");
-
     const [searchRes, liveRes] = await Promise.all(requests);
 
-    // Gérer les erreurs de quota pour les requêtes de base
+    // Si searchRes existe et est en erreur
     if (searchRes && !searchRes.ok) {
-      const errorBody = await searchRes.text();
+      const errorBody = await searchRes.text().catch(() => "");
       console.error(
         "Erreur lors de la récupération des vidéos (latest):",
         searchRes.status,
@@ -89,6 +126,7 @@ exports.handler = async function () {
           videoData: null,
           liveData: { isLive: false, url: false },
           playlistVideos: [],
+          channelData: { subscriberCount: null },
         };
 
         cache.quotaExceeded = true;
@@ -99,6 +137,7 @@ exports.handler = async function () {
         return {
           statusCode: 200,
           headers: {
+            ...corsHeaders,
             "Cache-Control": "public, max-age=86400",
           },
           body: JSON.stringify(fallbackData),
@@ -107,6 +146,7 @@ exports.handler = async function () {
 
       return {
         statusCode: 500,
+        headers: corsHeaders,
         body: JSON.stringify({
           error: "Erreur lors de la récupération des vidéos (latest)",
           status: searchRes.status,
@@ -119,70 +159,109 @@ exports.handler = async function () {
     let videoData = null;
     let liveData = { isLive: false, url: false };
     let subscriberCount = null;
+    let videoCount = null;
 
-    if (searchRes) {
-      const searchData = await searchRes.json();
+    if (searchRes && searchRes.ok) {
+      const searchData = await searchRes.json().catch(() => null);
 
-      if (searchData.items && searchData.items.length > 0) {
+      if (searchData && searchData.items && searchData.items.length > 0) {
         const video = searchData.items[0];
-        const videoId = video.id.videoId;
+        const videoId = video.id?.videoId;
 
-        // Récupérer les statistiques
-        const statsRes = await fetch(
-          `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${videoId}&part=statistics,contentDetails`,
-        );
+        if (videoId) {
+          // Récupérer les statistiques
+          try {
+            const statsRes = await fetch(
+              `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${videoId}&part=statistics,contentDetails`,
+            );
 
-        let stats = null;
-        if (statsRes.ok) {
-          const statsData = await statsRes.json();
-          stats = statsData.items?.[0];
+            let stats = null;
+            if (statsRes.ok) {
+              const statsData = await statsRes.json();
+              stats = statsData.items?.[0];
+            } else if (statsRes.status === 403) {
+              // Quota hit sur la requête de stats
+              cache.quotaExceeded = true;
+              cache.errorTimestamp = now;
+              console.warn("Quota exceeded when fetching video stats");
+            }
+
+            videoData = {
+              id: videoId,
+              title: video.snippet?.title ?? null,
+              description: video.snippet?.description ?? "",
+              thumbnail:
+                video.snippet?.thumbnails?.maxres?.url ||
+                video.snippet?.thumbnails?.high?.url ||
+                video.snippet?.thumbnails?.default?.url ||
+                null,
+              publishedAt: video.snippet?.publishedAt ?? null,
+              viewCount: stats?.statistics?.viewCount ?? null,
+              duration: stats?.contentDetails?.duration ?? null,
+              likeCount: stats?.statistics?.likeCount ?? null,
+            };
+          } catch (e) {
+            console.warn(
+              "Erreur lors de la récupération des stats:",
+              e.message,
+            );
+          }
         }
-
-        videoData = {
-          id: videoId,
-          title: video.snippet.title,
-          description: video.snippet.description,
-          thumbnail:
-            video.snippet.thumbnails?.maxres?.url ||
-            video.snippet.thumbnails?.high?.url ||
-            video.snippet.thumbnails?.default?.url ||
-            null,
-          publishedAt: video.snippet.publishedAt,
-          viewCount: stats?.statistics?.viewCount ?? null,
-          duration: stats?.contentDetails?.duration ?? null,
-          likeCount: stats?.statistics?.likeCount ?? null,
-        };
       }
     }
 
     // Traitement du live
-    if (liveRes && liveRes.ok) {
-      const liveDataRaw = await liveRes.json();
-      if (liveDataRaw && liveDataRaw.items && liveDataRaw.items.length > 0) {
-        const liveVideo = liveDataRaw.items[0];
-        const liveVideoId = liveVideo.id?.videoId;
-        if (liveVideoId) {
-          liveData = {
-            isLive: true,
-            url: `https://www.youtube.com/watch?v=${liveVideoId}`,
-          };
+    if (liveRes) {
+      if (!liveRes.ok) {
+        const txt = await liveRes.text().catch(() => "");
+        console.warn("Live check non-ok:", liveRes.status, txt);
+        if (liveRes.status === 403) {
+          cache.quotaExceeded = true;
+          cache.errorTimestamp = now;
+        }
+      } else {
+        const liveDataRaw = await liveRes.json().catch(() => null);
+        if (liveDataRaw && liveDataRaw.items && liveDataRaw.items.length > 0) {
+          const liveVideo = liveDataRaw.items[0];
+          const liveVideoId = liveVideo.id?.videoId;
+          if (liveVideoId) {
+            liveData = {
+              isLive: true,
+              url: `https://www.youtube.com/watch?v=${liveVideoId}`,
+            };
+          }
         }
       }
     }
 
-    // Récupérer le nombre d'abonnés si channelId fourni
+    // Récupérer le nombre d'abonnés et le videoCount si channelId fourni
     if (channelId) {
       try {
         const channelRes = await fetch(
           `https://www.googleapis.com/youtube/v3/channels?key=${API_KEY}&id=${channelId}&part=statistics`,
         );
+
         if (channelRes.ok) {
-          const channelData = await channelRes.json();
-          const channelStats = channelData.items?.[0]?.statistics;
+          const channelJson = await channelRes.json().catch(() => null);
+          const channelStats = channelJson?.items?.[0]?.statistics;
           subscriberCount = channelStats?.subscriberCount ?? null;
+
+          // videoCount est fourni par l'API dans statistics.videoCount
+          const rawVideoCount = channelStats?.videoCount ?? null;
+          videoCount =
+            rawVideoCount != null ? parseInt(rawVideoCount, 10) : null;
+        } else if (channelRes.status === 403) {
+          cache.quotaExceeded = true;
+          cache.errorTimestamp = now;
+          console.warn("Quota exceeded when fetching channel statistics");
+        } else {
+          console.warn("Channel stats fetch non-ok:", channelRes.status);
         }
       } catch (e) {
-        console.warn("Erreur lors de la récupération des abonnés :", e.message);
+        console.warn(
+          "Erreur lors de la récupération des abonnés/videoCount :",
+          e.message,
+        );
       }
     }
 
@@ -198,8 +277,9 @@ exports.handler = async function () {
           "Erreur lors de la récupération de la playlist :",
           e.message,
         );
-        if (e.message.includes("403")) {
-          // Si quota dépassé pour la playlist, on continue sans
+        if ((e.message || "").includes("403")) {
+          cache.quotaExceeded = true;
+          cache.errorTimestamp = now;
           console.log("Quota dépassé pour la playlist, on continue sans");
         }
       }
@@ -210,14 +290,19 @@ exports.handler = async function () {
       liveData,
       channelData: {
         subscriberCount,
+        videoCount,
       },
       playlistVideos,
     };
 
-    // Mettre en cache la réponse et reset quota exceeded
+    // Mettre en cache la réponse et reset quota exceeded si pas de problème
     cache.data = responsePayload;
     cache.timestamp = now;
-    cache.quotaExceeded = false;
+
+    if (!cache.quotaExceeded) {
+      // if previously flagged but now good, reset flag
+      cache.quotaExceeded = false;
+    }
 
     console.log(
       "Response payload prepared with",
@@ -228,17 +313,20 @@ exports.handler = async function () {
     return {
       statusCode: 200,
       headers: {
+        ...corsHeaders,
         "Cache-Control": "public, max-age=300",
       },
       body: JSON.stringify(responsePayload),
     };
   } catch (err) {
     console.error(err);
+    // Si erreur inattendue, on renvoie aussi les headers CORS
     return {
       statusCode: 500,
+      headers: corsHeaders,
       body: JSON.stringify({
         error: "Erreur lors du chargement des données YouTube",
-        details: err.message,
+        details: err && err.message ? err.message : String(err),
       }),
     };
   }
@@ -295,6 +383,8 @@ async function fetchAllPlaylistVideos(apiKey, playlistId, maxResults = 50) {
                   videoStats[item.id] = item;
                 });
               }
+            } else if (statsResponse.status === 403) {
+              console.warn("Quota exceeded when fetching playlist video stats");
             }
           } catch (e) {
             console.warn(

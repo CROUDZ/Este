@@ -1,19 +1,42 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Image from "next/image";
 import { m } from "framer-motion";
 import { Play, Users, ExternalLink, Zap, Trophy } from "lucide-react";
 import { useYouTube } from "@/contexts/YouTubeContext";
 import BackgroundElements from "@/components/shared/BackgroundElements";
 import { StatCard, GlassCard } from "@/components/shared/GlassCard";
+import Loading from "@/components/LoadingSpinner";
 import CTAButton from "@/components/shared/CTAButton";
 
 import Este_YTBBody from "@/assets/este-body.webp";
 
 const HeroSection: React.FC = () => {
-  const { data } = useYouTube();
-  const liveData = data?.liveData || { isLive: false, url: false };
+  const { data: youtubeData } = useYouTube();
+
+  const data = useMemo(() => {
+    if (!youtubeData) return null;
+
+    const totalVideos =
+      youtubeData.channelData?.videoCount ??
+      youtubeData.playlistVideos?.length ??
+      0;
+
+    return {
+      live: youtubeData.liveData || { isLive: false, url: false },
+      sub:
+        Math.floor(
+          Number(youtubeData.channelData?.subscriberCount ?? 0) / 100,
+        ) * 100,
+      videoCount:
+        totalVideos < 100 ? totalVideos : Math.floor(totalVideos / 100) * 100,
+    };
+  }, [youtubeData]);
+
+  if (!data || !youtubeData) {
+    return <Loading />;
+  }
 
   return (
     <section className="flex flex-col relative min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 overflow-hidden pt-16 items-center text-center sm:items-start sm:text-left">
@@ -29,20 +52,20 @@ const HeroSection: React.FC = () => {
         >
           <div
             className={`flex items-center gap-3 px-6 py-3 rounded-full backdrop-blur-lg border ${
-              liveData.isLive
+              data.live.isLive
                 ? "bg-red-500/10 border-red-400/30 text-red-300"
                 : "bg-slate-700/30 border-slate-500/30 text-slate-300"
             }`}
           >
             <div
-              className={`w-2 h-2 rounded-full ${liveData.isLive ? "bg-red-400 animate-pulse" : "bg-slate-400"}`}
+              className={`w-2 h-2 rounded-full ${data.live.isLive ? "bg-red-400 animate-pulse" : "bg-slate-400"}`}
             ></div>
             <span className="text-sm font-medium">
-              {liveData.isLive ? (
+              {data.live.isLive ? (
                 <>
                   LIVE -{" "}
                   <a
-                    href={liveData.url || "#"}
+                    href={data.live.url || "#"}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline hover:no-underline"
@@ -88,7 +111,7 @@ const HeroSection: React.FC = () => {
 
             <p className="section-subtitle">
               Plongez dans l'univers Minecraft avec 8 ans d'expertise ! PvP
-              intense, constructions épiques, mods exclusifs et découvertes
+              , constructions épiques, mods exclusifs et découvertes
               multi-gaming vous attendent.
             </p>
 
@@ -167,14 +190,14 @@ const HeroSection: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <StatCard
                 icon={Play}
-                value="100+"
+                value={`${data.videoCount} +`}
                 label="Vidéos"
                 iconColor="text-red-400"
               />
 
               <StatCard
                 icon={Users}
-                value="200 +"
+                value={`${data.sub} +`}
                 label="Abonnés"
                 iconColor="text-cyan-400"
               />

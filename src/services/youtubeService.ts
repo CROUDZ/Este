@@ -29,6 +29,7 @@ interface LiveData {
 
 interface ChannelData {
   subscriberCount: number | null;
+  videoCount: number | null;
 }
 
 export interface YouTubeData {
@@ -56,7 +57,7 @@ class YouTubeService {
     return {
       videoData: null,
       liveData: { isLive: false, url: false },
-      channelData: null,
+      channelData: { subscriberCount: null, videoCount: null },
       playlistVideos: [],
       lastFetched: Date.now(),
     };
